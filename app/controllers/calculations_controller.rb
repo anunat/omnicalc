@@ -10,23 +10,24 @@ class CalculationsController < ApplicationController
     # The special word the user input is in the string @special_word.
     # ================================================================================
 
+    @character_count_with_spaces = @text.length
 
-    @character_count_with_spaces = "Replace this string with your answer."
+    @character_count_without_spaces = @text.gsub(" ", "").length
 
-    @character_count_without_spaces = "Replace this string with your answer."
+    words = @text.downcase.gsub(/[^\w\s\d]/, '').split
 
-    @word_count = "Replace this string with your answer."
+    @word_count = words.count
 
-    @occurrences = "Replace this string with your answer."
+    @occurrences = words.count(@special_word.downcase)
 
     # ================================================================================
     # Your code goes above.
     # ================================================================================
 
     render("word_count.html.erb")
-  end
+end
 
-  def loan_payment
+def loan_payment
     @apr = params[:annual_percentage_rate].to_f
     @years = params[:number_of_years].to_i
     @principal = params[:principal_value].to_f
@@ -37,17 +38,19 @@ class CalculationsController < ApplicationController
     # The number of years the user input is in the integer @years.
     # The principal value the user input is in the decimal @principal.
     # ================================================================================
+    r = @apr/1200.0
+    n = @years * 12
 
-    @monthly_payment = "Replace this string with your answer."
+    @monthly_payment = ((r * @principal) / ( 1 - (1+r)**-n))
 
     # ================================================================================
     # Your code goes above.
     # ================================================================================
 
     render("loan_payment.html.erb")
-  end
+end
 
-  def time_between
+def time_between
     @starting = Chronic.parse(params[:starting_time])
     @ending = Chronic.parse(params[:ending_time])
 
@@ -60,21 +63,22 @@ class CalculationsController < ApplicationController
     #   number of seconds as a result.
     # ================================================================================
 
-    @seconds = "Replace this string with your answer."
-    @minutes = "Replace this string with your answer."
-    @hours = "Replace this string with your answer."
-    @days = "Replace this string with your answer."
-    @weeks = "Replace this string with your answer."
-    @years = "Replace this string with your answer."
+    @seconds = @ending - @starting
+    @minutes = @seconds/60.0
+    @hours = @minutes/60.0
+    @days = @hours/24.0
+    @weeks = @days/7.0
+    @years = @days/365.25
+    #@years = @ending.year-@starting.year
 
     # ================================================================================
     # Your code goes above.
     # ================================================================================
 
     render("time_between.html.erb")
-  end
+end
 
-  def descriptive_statistics
+def descriptive_statistics
     @numbers = params[:list_of_numbers].gsub(',', '').split.map(&:to_f)
 
     # ================================================================================
@@ -82,32 +86,48 @@ class CalculationsController < ApplicationController
     # The numbers the user input are in the array @numbers.
     # ================================================================================
 
-    @sorted_numbers = "Replace this string with your answer."
+    @sorted_numbers = @numbers.sort
 
-    @count = "Replace this string with your answer."
+    @count = @numbers.count
 
-    @minimum = "Replace this string with your answer."
+    @minimum = @sorted_numbers[0]
 
-    @maximum = "Replace this string with your answer."
+    @maximum = @sorted_numbers[@count-1]
 
-    @range = "Replace this string with your answer."
+    @range = @maximum - @minimum
 
-    @median = "Replace this string with your answer."
+    if @count.odd?
+        @median = @sorted_numbers[(@count-1)/2]
+    else
+        @median = (@sorted_numbers[@count/2] + @sorted_numbers[@count/2 - 1])/2.0
+    end
+    @sum = 0
+    @numbers.each do |num|
+        @sum = @sum + num
+    end
 
-    @sum = "Replace this string with your answer."
+    @mean = @sum/(@count.to_f)
+    sumofsquareddiff = 0
+    @numbers.each do |num|
+        sumofsquareddiff = sumofsquareddiff + (num - @mean)**2
 
-    @mean = "Replace this string with your answer."
+    end
+    @variance = sumofsquareddiff/(@count).to_f
 
-    @variance = "Replace this string with your answer."
+    @standard_deviation = @variance**0.5
 
-    @standard_deviation = "Replace this string with your answer."
+    counter = Hash.new(0)
 
-    @mode = "Replace this string with your answer."
+    @sorted_numbers.each do |num|
+        counter[num] = counter[num] + 1
+    end
+
+    @mode = counter.key(counter.values.max)
 
     # ================================================================================
     # Your code goes above.
     # ================================================================================
 
     render("descriptive_statistics.html.erb")
-  end
+end
 end
